@@ -32,8 +32,10 @@ One async Python client for multiple video-generation providers: **Seedance, Kli
 git clone https://github.com/letorig/video-generator-client
 cd video-generator-client
 python -m venv .venv
-# Windows: .venv\\Scripts\\activate
-# macOS/Linux: source .venv/bin/activate
+# Windows:
+.venv\\Scripts\\activate
+# macOS/Linux:
+source .venv/bin/activate
 pip install -e ".[web]"
 ```
 
