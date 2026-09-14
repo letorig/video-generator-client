@@ -42,12 +42,13 @@ pip install -e ".[web]"
 Copy `.env.example` to `.env` and add the credentials for the providers you use.
 
 ## CLI
+Output is saved to the output folder.
 
 ```bash
 video-gen --help
 video-gen providers
 video-gen models wan
-video-gen generate wan --prompt "A snowy forest at dawn" --model 2.1 --duration 5 --output output/snow.mp4
+video-gen generate wan --prompt "A snowy forest at dawn" --model 2.1 --duration 5
 video-gen status wan TASK_ID
 video-gen serve
 ```
