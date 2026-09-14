@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import seedance
 from typing import Optional
 
 import typer
@@ -12,6 +13,8 @@ from rich.table import Table
 from .catalog import PROVIDER_INFO
 from .client import VideoClient
 from .config import Config
+
+seedance.run_sync()
 
 app = typer.Typer(
     name="video-gen",
