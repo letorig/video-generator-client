@@ -1,17 +1,13 @@
-# Unified Video Gen
+# Video Gen Client
 
 One async Python client for multiple video-generation providers: **Seedance, Kling, MiniMax/Hailuo and Wan**.
 
-## Interfaces
-
-- **CLI:** `video-gen generate ...`
-- **Web UI:** `video-gen serve`, then open `http://127.0.0.1:8000`
-- **Python SDK:** `from video_gen import VideoClient`
-- **MCP server:** optional `mcp` extra
 
 ## Install
 
 ```bash
+git clone https://github.com/letorig/video-generator-client
+cd video-generator-client
 python -m venv .venv
 # Windows: .venv\\Scripts\\activate
 # macOS/Linux: source .venv/bin/activate
@@ -52,26 +48,6 @@ The UI provides:
 - video preview and MP4 download
 - in-memory task history for the current server session
 
-## Python SDK
-
-```python
-import asyncio
-from video_gen import VideoClient
-
-async def main() -> None:
-    async with VideoClient() as client:
-        task = await client.generate(
-            provider="wan",
-            model="2.1",
-            prompt="A cinematic shot of a snowy forest at dawn",
-            duration=5,
-        )
-        result = await task.wait()
-        print(result.video_url)
-        await task.download("output/snow.mp4")
-
-asyncio.run(main())
-```
 
 ## Project layout
 
@@ -98,4 +74,4 @@ unified-video-gen/
 
 Provider APIs and model IDs change independently of this SDK. Treat the provider adapters as integration code that may need updates when a provider changes its API.
 
-No `bootstrap.sh` is included in this project.
+
