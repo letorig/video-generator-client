@@ -1,5 +1,5 @@
 """Minimal stdio MCP server for Unified Video Gen."""
-
+ 
 from __future__ import annotations
 
 import asyncio
