@@ -1,4 +1,4 @@
-"""Command-line interface for unified-video-gen."""
+"""Command-line interface for unified-video-gen.""" 
 
 from __future__ import annotations
 
