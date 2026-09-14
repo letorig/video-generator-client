@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unified Video Gen</title>
+<style>
+:root{--bg:#0e1117;--panel:#161b22;--border:#2a3140;--text:#e6edf3;--muted:#8b949e;--accent:#3b82f6;--green:#22c55e;--red:#ef4444}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:auto;padding:32px 20px 80px}h1{margin:0 0 4px;font-size:24px}.sub{color:var(--muted);margin-bottom:24px}.panel,.task{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px}
+label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}input,select,textarea{width:100%;background:#0d1117;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font:inherit}textarea{resize:vertical;min-height:80px}.field{margin-bottom:14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+button{background:var(--accent);color:white;border:0;border-radius:6px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.error{color:var(--red);margin-top:10px}.meta,.hint{color:var(--muted);font-size:12px}.task-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}.prompt{margin:8px 0;color:var(--muted);word-break:break-word}.badge{padding:2px 8px;border-radius:999px;font-size:11px;text-transform:uppercase}.pending{color:#eab308}.running{color:#60a5fa}.succeeded{color:var(--green)}.failed{color:var(--red)}video{width:100%;max-height:500px;border-radius:6px;margin-top:8px}a{color:#60a5fa}.empty{text-align:center;color:var(--muted);padding:24px}
+@media(max-width:650px){.row,.row3{grid-template-columns:1fr}}
+</style>
+</head>
+<body><main class="wrap">
+<h1>Unified Video Gen</h1><div class="sub">Seedance · Kling · MiniMax · Wan</div>
+<section class="panel">
+<div class="field"><label>Provider</label><select id="provider"></select><div id="providerHint" class="hint"></div></div>
+<div class="row"><div class="field"><label>Model</label><select id="model"></select></div><div class="field" id="imageField"><label>Image URL</label><input id="image" placeholder="https://..." /></div></div>
+<div class="field"><label>Prompt</label><textarea id="prompt" placeholder="A cinematic shot of a snowy forest at dawn..."></textarea></div>
+<div class="field"><label>Negative prompt</label><input id="negative" placeholder="blurry, low quality, watermark" /></div>
+<div class="row3"><div class="field"><label>Duration (s)</label><input id="duration" type="number" min="1" max="60" value="5"></div><div class="field"><label>Aspect ratio</label><select id="aspect"></select></div><div class="field"><label>Resolution</label><select id="resolution"></select></div></div>
+<button id="generate">Generate</button><div id="error" class="error"></div>
+</section>
+<h2 style="font-size:15px;color:var(--muted);font-weight:500">Recent tasks</h2><section id="tasks"><div class="empty">No tasks yet.</div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);let providers=[];
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function load(){const r=await fetch('/api/providers');const d=await r.json();providers=d.providers; $('provider').innerHTML=providers.map(p=>`<option value="${esc(p.name)}" ${p.configured?'':'disabled'}>${esc(p.label)}${p.configured?'':' (no key)'}</option>`).join('');const first=providers.find(p=>p.configured);if(first)$('provider').value=first.name;$('aspect').innerHTML=d.aspect_ratios.map(x=>`<option>${x}</option>`).join('');$('resolution').innerHTML=d.resolutions.map(x=>`<option>${x}</option>`).join('');changeProvider();if(!first)$('error').textContent='No provider is configured. Add an API key to .env and restart the server.';}
+function changeProvider(){const p=providers.find(x=>x.name===$('provider').value);if(!p)return;$('model').innerHTML=p.models.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');$('imageField').style.display=p.supports_image?'block':'none';$('providerHint').textContent=p.configured?'':'This provider has no configured credentials.';}
+async function generate(){const err=$('error');err.textContent='';const prompt=$('prompt').value.trim();if(!prompt){err.textContent='Prompt is required.';return}const body={provider:$('provider').value,prompt,model:$('model').value||null,negative_prompt:$('negative').value.trim()||null,image_url:$('image').value.trim()||null,duration:Number($('duration').value)||5,aspect_ratio:$('aspect').value,resolution:$('resolution').value};$('generate').disabled=true;try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||`HTTP ${r.status}`);await refresh()}catch(e){err.textContent=e.message}finally{$('generate').disabled=false}}
+async function refresh(){const r=await fetch('/api/tasks');const d=await r.json();if(!d.tasks.length){$('tasks').innerHTML='<div class="empty">No tasks yet.</div>';return}$('tasks').innerHTML=d.tasks.map(t=>`<article class="task"><div class="task-head"><span class="meta">${esc(t.provider)} · ${esc(t.task_id)}</span><span class="badge ${esc(t.state)}">${esc(t.state)}</span></div><div class="prompt">${esc(t.prompt)}</div>${t.video_url?`<video src="${esc(t.video_url)}" controls preload="metadata"></video><div class="meta"><a href="/api/tasks/${encodeURIComponent(t.local_id)}/download">Download mp4</a></div>`:''}${t.error?`<div class="error">${esc(t.error)}</div>`:''}</article>`).join('')}
+$('provider').addEventListener('change',changeProvider);$('generate').addEventListener('click',generate);load().then(refresh);setInterval(refresh,3000);
+</script></body></html>
