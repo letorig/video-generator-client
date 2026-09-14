@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-import seedance
+from . import seedance
 from typing import Optional
 
 import typer
