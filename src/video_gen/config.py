@@ -36,5 +36,16 @@ class Config:
         default_factory=lambda: _get("DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com")  # type: ignore[arg-type]
     )
 
+    # OrcaRouter. The API key itself is read through the credential store so that
+    # both authentication choices (pasted key and PKCE login) share one path;
+    # these are only the origin overrides.
+    orcarouter_base_url: Optional[str] = field(default_factory=lambda: _get("ORCA_BASE_URL"))
+    orcarouter_auth_base_url: Optional[str] = field(
+        default_factory=lambda: _get("ORCA_AUTH_BASE_URL")
+    )
+    orcarouter_api_base_url: Optional[str] = field(
+        default_factory=lambda: _get("ORCA_API_BASE_URL")
+    )
+
     poll_interval: float = field(default_factory=lambda: float(_get("POLL_INTERVAL", "5") or 5))
     poll_timeout: float = field(default_factory=lambda: float(_get("POLL_TIMEOUT", "600") or 600))

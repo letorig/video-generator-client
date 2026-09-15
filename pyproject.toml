@@ -41,3 +41,9 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+# The package uses a src/ layout, so the suite has to be able to import
+# video_gen straight from a source checkout. Without this, `pytest` only works
+# after an editable install, which a reviewer replaying the checks should not
+# have to run first (and which needs network access to resolve the build
+# requirements).
+pythonpath = ["src"]

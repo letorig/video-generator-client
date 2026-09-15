@@ -6,6 +6,7 @@ from ..exceptions import ProviderNotSupported
 from .base import BaseProvider
 from .kling import KlingProvider
 from .minimax import MiniMaxProvider
+from .orcarouter import OrcaRouterProvider
 from .seedance import SeedanceProvider
 from .wan import WanProvider
 
@@ -14,6 +15,7 @@ PROVIDERS: dict[str, type[BaseProvider]] = {
     "kling": KlingProvider,
     "minimax": MiniMaxProvider,
     "wan": WanProvider,
+    "orcarouter": OrcaRouterProvider,
 }
 
 

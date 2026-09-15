@@ -5,19 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Unified Video Gen</title>
 <style>
-:root{--bg:#0e1117;--panel:#161b22;--border:#2a3140;--text:#e6edf3;--muted:#8b949e;--accent:#3b82f6;--green:#22c55e;--red:#ef4444}
+:root{--bg:#0e1117;--panel:#161b22;--border:#2a3140;--text:#e6edf3;--muted:#8b949e;--accent:#3b82f6;--green:#22c55e;--red:#ef4444;--amber:#eab308}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 .wrap{max-width:900px;margin:auto;padding:32px 20px 80px}h1{margin:0 0 4px;font-size:24px}.sub{color:var(--muted);margin-bottom:24px}.panel,.task{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px}
 label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}input,select,textarea{width:100%;background:#0d1117;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font:inherit}textarea{resize:vertical;min-height:80px}.field{margin-bottom:14px}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
-button{background:var(--accent);color:white;border:0;border-radius:6px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.error{color:var(--red);margin-top:10px}.meta,.hint{color:var(--muted);font-size:12px}.task-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}.prompt{margin:8px 0;color:var(--muted);word-break:break-word}.badge{padding:2px 8px;border-radius:999px;font-size:11px;text-transform:uppercase}.pending{color:#eab308}.running{color:#60a5fa}.succeeded{color:var(--green)}.failed{color:var(--red)}video{width:100%;max-height:500px;border-radius:6px;margin-top:8px}a{color:#60a5fa}.empty{text-align:center;color:var(--muted);padding:24px}
+button{background:var(--accent);color:white;border:0;border-radius:6px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}button.secondary{background:#21262d;border:1px solid var(--border)}button.link{background:none;border:0;color:#60a5fa;padding:4px 0;font-weight:500;cursor:pointer;text-align:left}
+.error{color:var(--red);margin-top:10px}.meta,.hint{color:var(--muted);font-size:12px}.task-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}.prompt{margin:8px 0;color:var(--muted);word-break:break-word}.badge{padding:2px 8px;border-radius:999px;font-size:11px;text-transform:uppercase}.pending{color:#eab308}.running{color:#60a5fa}.succeeded{color:var(--green)}.failed{color:var(--red)}video{width:100%;max-height:500px;border-radius:6px;margin-top:8px}a{color:#60a5fa}.empty{text-align:center;color:var(--muted);padding:24px}
+.auth{border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px}.auth h3{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}.auth .row-inline{display:flex;gap:8px;align-items:flex-start}.auth .row-inline input{flex:1}
+/* Model picker. A native <select> cannot carry capability metadata or a filter,
+   so this is a real listbox: button trigger + panel, keyboard accessible. */
+.dd{position:relative}
+.dd-trigger{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;background:#0d1117;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:9px 11px;font:inherit;font-weight:400;text-align:left;cursor:pointer}
+.dd-trigger:hover{border-color:#3d4757}
+.dd-trigger[aria-expanded="true"]{border-color:var(--accent)}
+.dd-trigger:disabled{opacity:.5;cursor:not-allowed}
+.dd-value{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dd-caret{color:var(--muted);flex:0 0 auto}
+.dd-panel{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:20;margin:0;padding:6px;list-style:none;background:var(--panel);border:1px solid var(--border);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.55);max-height:280px;overflow:auto}
+.dd-panel[hidden]{display:none}
+.dd-search{width:100%;margin-bottom:6px}
+.dd-option{display:flex;flex-direction:column;gap:2px;padding:7px 9px;border-radius:5px;cursor:pointer}
+.dd-option[aria-selected="true"]{background:#1f2a3a}
+.dd-option.active{background:#22304a}
+.dd-option .id{font-size:13px}
+.dd-option .cap{font-size:11px;color:var(--muted)}
+.dd-empty{padding:8px 9px;color:var(--muted);font-size:12px}
+.status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-top:10px;flex-wrap:wrap}.pill{border-radius:999px;padding:2px 9px;font-size:11px;border:1px solid var(--border)}.pill.ok{color:var(--green);border-color:#1f6f43}.pill.warn{color:var(--amber);border-color:#7a5c10}.pill.off{color:var(--muted)}
+.degraded{color:var(--amber);font-size:12px;margin-top:6px}
 @media(max-width:650px){.row,.row3{grid-template-columns:1fr}}
 </style>
 </head>
 <body><main class="wrap">
-<h1>Unified Video Gen</h1><div class="sub">Seedance · Kling · MiniMax · Wan</div>
+<h1>Unified Video Gen</h1><div class="sub">Seedance · Kling · MiniMax · Wan · OrcaRouter</div>
+
+<section class="panel" id="authPanel">
+<h3 style="margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)">OrcaRouter account</h3>
+
+<div class="auth" id="authApiKey">
+<h3>OrcaRouter - API</h3>
+<div class="hint">Paste an existing <code>sk-orca-…</code> key. Create one in the <a href="https://www.orcarouter.ai/console/token" target="_blank" rel="noopener">OrcaRouter console</a>.</div>
+<div class="row-inline" style="margin-top:8px"><input id="apiKey" type="password" placeholder="sk-orca-…" autocomplete="off" spellcheck="false"><button class="secondary" id="saveKey">Save key</button></div>
+</div>
+
+<div class="auth" id="authPkce">
+<h3>OrcaRouter - Auth</h3>
+<div class="hint">Sign in with your OrcaRouter account. A code is shown — paste it back here. No client secret, no redirect to register.</div>
+<div class="row-inline" style="margin-top:8px"><button id="startLogin">Connect with OrcaRouter</button><input id="oobCode" placeholder="Paste the code from the consent screen" style="display:none" autocomplete="off"></div>
+<div id="authHint" class="hint" style="margin-top:8px"></div>
+<button class="link" id="cancelLogin" style="display:none">Cancel sign-in</button>
+</div>
+
+<div class="status">
+<span class="pill off" id="authPill">no credential</span>
+<span id="authWho"></span>
+<button class="link" id="logout" style="display:none">Sign out</button>
+</div>
+</section>
+
 <section class="panel">
 <div class="field"><label>Provider</label><select id="provider"></select><div id="providerHint" class="hint"></div></div>
-<div class="row"><div class="field"><label>Model</label><select id="model"></select></div><div class="field" id="imageField"><label>Image URL</label><input id="image" placeholder="https://..." /></div></div>
+<div class="row"><div class="field"><label id="modelLabel">Model</label>
+<div class="dd" id="modelPicker"><button type="button" id="modelTrigger" class="dd-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="modelLabel"><span class="dd-value" id="modelValue">—</span><span class="dd-caret">▾</span></button>
+<ul class="dd-panel" id="modelPanel" role="listbox" aria-labelledby="modelLabel" hidden></ul></div>
+<div id="modelHint" class="degraded" style="display:none"></div></div><div class="field" id="imageField"><label>Image URL</label><input id="image" placeholder="https://..." /></div></div>
 <div class="field"><label>Prompt</label><textarea id="prompt" placeholder="A cinematic shot of a snowy forest at dawn..."></textarea></div>
 <div class="field"><label>Negative prompt</label><input id="negative" placeholder="blurry, low quality, watermark" /></div>
 <div class="row3"><div class="field"><label>Duration (s)</label><input id="duration" type="number" min="1" max="60" value="5"></div><div class="field"><label>Aspect ratio</label><select id="aspect"></select></div><div class="field"><label>Resolution</label><select id="resolution"></select></div></div>
@@ -27,10 +77,160 @@ button{background:var(--accent);color:white;border:0;border-radius:6px;padding:1
 </main>
 <script>
 const $=id=>document.getElementById(id);let providers=[];
+// Monotonic generation guard. Every async response must confirm it still
+// belongs to the current login attempt before touching credentials or UI state.
+let loginAttempt=0;
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-async function load(){const r=await fetch('/api/providers');const d=await r.json();providers=d.providers; $('provider').innerHTML=providers.map(p=>`<option value="${esc(p.name)}" ${p.configured?'':'disabled'}>${esc(p.label)}${p.configured?'':' (no key)'}</option>`).join('');const first=providers.find(p=>p.configured);if(first)$('provider').value=first.name;$('aspect').innerHTML=d.aspect_ratios.map(x=>`<option>${x}</option>`).join('');$('resolution').innerHTML=d.resolutions.map(x=>`<option>${x}</option>`).join('');changeProvider();if(!first)$('error').textContent='No provider is configured. Add an API key to .env and restart the server.';}
-function changeProvider(){const p=providers.find(x=>x.name===$('provider').value);if(!p)return;$('model').innerHTML=p.models.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');$('imageField').style.display=p.supports_image?'block':'none';$('providerHint').textContent=p.configured?'':'This provider has no configured credentials.';}
-async function generate(){const err=$('error');err.textContent='';const prompt=$('prompt').value.trim();if(!prompt){err.textContent='Prompt is required.';return}const body={provider:$('provider').value,prompt,model:$('model').value||null,negative_prompt:$('negative').value.trim()||null,image_url:$('image').value.trim()||null,duration:Number($('duration').value)||5,aspect_ratio:$('aspect').value,resolution:$('resolution').value};$('generate').disabled=true;try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||`HTTP ${r.status}`);await refresh()}catch(e){err.textContent=e.message}finally{$('generate').disabled=false}}
+function busy(on){$('startLogin').disabled=on;$('cancelLogin').style.display=on?'inline-block':'none';$('oobCode').style.display=on?'inline-block':'none';}
+function setHint(t){$('authHint').textContent=t||'';}
+
+// ---- model picker: a real listbox bound to the capability-filtered options --
+let modelOptions=[],modelId=null;
+function capLabel(o){
+  const bits=[];
+  if(o.context_length)bits.push(`${Math.round(o.context_length/1000)}k ctx`);
+  if(o.input_modalities&&o.input_modalities.length)bits.push(o.input_modalities.join('+'));
+  return bits.join(' · ');
+}
+function closePanel(){$('modelPanel').hidden=true;$('modelTrigger').setAttribute('aria-expanded','false');}
+function renderOptions(filter){
+  const needle=(filter||'').toLowerCase();
+  const shown=modelOptions.filter(o=>!needle||o.id.toLowerCase().includes(needle));
+  const panel=$('modelPanel');
+  const search=modelOptions.length>8?`<li><input class="dd-search" id="modelSearch" placeholder="Filter models…" autocomplete="off"></li>`:'';
+  panel.innerHTML=search+(shown.length?shown.map(o=>`<li class="dd-option" role="option" data-id="${esc(o.id)}" aria-selected="${o.id===modelId}"><span class="id">${esc(o.id)}</span><span class="cap">${esc(capLabel(o))}</span></li>`).join(''):'<li class="dd-empty">No compatible model for this input.</li>');
+  const box=$('modelSearch');
+  if(box){box.addEventListener('input',()=>renderOptions(box.value));}
+  panel.querySelectorAll('.dd-option').forEach(el=>el.addEventListener('click',()=>{modelId=el.dataset.id;$('modelValue').textContent=modelId;closePanel();}));
+}
+function setModelOptions(options){
+  modelOptions=options||[];
+  // A previously selected model that no longer passes the filter is cleared.
+  if(modelId&&!modelOptions.some(o=>o.id===modelId))modelId=null;
+  if(!modelId&&modelOptions.length)modelId=modelOptions[0].id;
+  $('modelValue').textContent=modelId||'—';
+  $('modelTrigger').disabled=!modelOptions.length;
+  if(!$('modelPanel').hidden)renderOptions($('modelSearch')?.value);
+}
+$('modelTrigger').addEventListener('click',()=>{
+  const panel=$('modelPanel');
+  if(panel.hidden){renderOptions('');panel.hidden=false;$('modelTrigger').setAttribute('aria-expanded','true');}
+  else closePanel();
+});
+document.addEventListener('click',e=>{if(!e.target.closest('.dd'))closePanel();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
+
+// ---- provider + capability-filtered model options -------------------------
+function currentProvider(){return providers.find(p=>p.name===$('provider').value);}
+async function changeProvider(){
+  const p=currentProvider();if(!p)return;
+  $('imageField').style.display=p.supports_image?'block':'none';
+  await refreshModels();
+  $('providerHint').textContent=p.configured?'':'This provider has no configured credentials.';
+}
+// The option list is recomputed from the current provider *and* the current
+// input type: adding an image URL narrows the list to models that declare image
+// input, and a selected model that is no longer compatible is cleared.
+async function refreshModels(){
+  const p=currentProvider();if(!p)return;
+  const needsImage=!!$('image').value.trim()&&p.supports_image;
+  if(!p.discovered){
+    setModelOptions(Object.entries(p.models||{}).map(([short,api])=>({id:short,context_length:null,input_modalities:[]})));
+    $('modelHint').style.display='none';
+    return;
+  }
+  try{
+    const r=await fetch(`/api/models?provider=${encodeURIComponent(p.name)}&image=${needsImage}`);
+    const d=await r.json();if(!r.ok)throw new Error(d.detail||`HTTP ${r.status}`);
+    setModelOptions(d.models||[]);
+    const c=d.catalog||{};
+    if((d.models||[]).length&&c.degraded){$('modelHint').style.display='block';$('modelHint').textContent=`Catalog unavailable (${c.detail||'error'}). Showing ${c.source} models.`;}
+    else if(!(d.models||[]).length){$('modelHint').style.display='block';$('modelHint').textContent=c.detail||'No compatible model is available for this input.';}
+    else{$('modelHint').style.display='none';}
+  }catch(e){setModelOptions([]);$('modelHint').style.display='block';$('modelHint').textContent=`Could not load models: ${e.message}`;}
+}
+
+// ---- OrcaRouter authentication: two explicit choices ----------------------
+function renderAuth(s){
+  const pill=$('authPill');const has=!!s.has_credential;
+  pill.className='pill '+(s.needs_reauth?'warn':(has?'ok':'off'));
+  pill.textContent=s.needs_reauth?'reauth required':(has?`${s.method} · ${s.masked}`:'no credential');
+  $('authWho').textContent=has?(s.user_id?`user ${s.user_id}`:''):'';
+  $('logout').style.display=has?'inline-block':'none';
+}
+async function authState(){const r=await fetch('/api/orcarouter/auth');const s=await r.json();renderAuth(s);return s;}
+async function saveApiKey(){
+  const v=$('apiKey').value.trim();if(!v)return;
+  const r=await fetch('/api/orcarouter/auth/api-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:v})});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){setHint(d.detail||`HTTP ${r.status}`);return}
+  $('apiKey').value='';setHint('API key saved.');renderAuth(d);await loadProviders();
+}
+async function startLogin(){
+  loginAttempt+=1;
+  const r=await fetch('/api/orcarouter/auth/pkce/start',{method:'POST'});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok){setHint(d.detail||`HTTP ${r.status}`);return}
+  if(d.attempt!==loginAttempt)return;   // superseded while in flight
+  busy(true);
+  const link=document.createElement('a');
+  link.href=d.authorize_url;link.target='_blank';link.rel='noopener';link.textContent=d.authorize_url;
+  const hint=$('authHint');hint.textContent='Open this URL, approve, then paste the code back: ';hint.appendChild(link);
+}
+async function completeLogin(){
+  const code=$('oobCode').value.trim();if(!code)return;
+  const attempt=loginAttempt;
+  const r=await fetch('/api/orcarouter/auth/pkce/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({attempt,code})});
+  const d=await r.json().catch(()=>({}));
+  if(attempt!==loginAttempt)return;      // a newer attempt owns the UI now
+  if(!r.ok){setHint(d.detail||`HTTP ${r.status}`);busy(false);return}
+  $('oobCode').value='';busy(false);setHint('Connected.');renderAuth(d);await loadProviders();
+}
+async function cancelLogin(){
+  loginAttempt+=1;
+  busy(false);setHint('');
+  await fetch('/api/orcarouter/auth/cancel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({attempt:null})}).catch(()=>{});
+}
+async function logout(){
+  busy(false);setHint('');
+  const r=await fetch('/api/orcarouter/auth/logout',{method:'POST'});
+  const s=await r.json().catch(()=>({}));renderAuth(s);await loadProviders();
+}
+
+// Back-forward cache: the page can be frozen and restored, so the invalidated
+// request's guarded `finally` will never run. Clear busy/hint synchronously here
+// and tell the server to drop the pending attempt with a keepalive request.
+window.addEventListener('pagehide',()=>{
+  loginAttempt+=1;
+  busy(false);setHint('');
+  try{
+    fetch('/api/orcarouter/auth/cancel',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({attempt:null})});
+  }catch(e){}
+});
+
+// ---- providers, generation, tasks -----------------------------------------
+async function loadProviders(){
+  const r=await fetch('/api/providers');const d=await r.json();providers=d.providers;
+  const previous=$('provider').value;
+  $('provider').innerHTML=providers.map(p=>`<option value="${esc(p.name)}" ${p.configured?'':'disabled'}>${esc(p.label)}${p.configured?'':' (no key)'}</option>`).join('');
+  const first=providers.find(p=>p.configured);
+  if(previous&&providers.some(p=>p.name===previous))$('provider').value=previous;
+  else if(first)$('provider').value=first.name;
+  $('aspect').innerHTML=d.aspect_ratios.map(x=>`<option>${x}</option>`).join('');
+  $('resolution').innerHTML=d.resolutions.map(x=>`<option>${x}</option>`).join('');
+  await changeProvider();
+  if(!first)$('error').textContent='No provider is configured. Add a credential and restart the server.';
+}
+async function generate(){const err=$('error');err.textContent='';const prompt=$('prompt').value.trim();if(!prompt){err.textContent='Prompt is required.';return}const body={provider:$('provider').value,prompt,model:modelId||null,negative_prompt:$('negative').value.trim()||null,image_url:$('image').value.trim()||null,duration:Number($('duration').value)||5,aspect_ratio:$('aspect').value,resolution:$('resolution').value};$('generate').disabled=true;try{const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.detail||`HTTP ${r.status}`);await refresh()}catch(e){err.textContent=e.message}finally{$('generate').disabled=false}}
 async function refresh(){const r=await fetch('/api/tasks');const d=await r.json();if(!d.tasks.length){$('tasks').innerHTML='<div class="empty">No tasks yet.</div>';return}$('tasks').innerHTML=d.tasks.map(t=>`<article class="task"><div class="task-head"><span class="meta">${esc(t.provider)} · ${esc(t.task_id)}</span><span class="badge ${esc(t.state)}">${esc(t.state)}</span></div><div class="prompt">${esc(t.prompt)}</div>${t.video_url?`<video src="${esc(t.video_url)}" controls preload="metadata"></video><div class="meta"><a href="/api/tasks/${encodeURIComponent(t.local_id)}/download">Download mp4</a></div>`:''}${t.error?`<div class="error">${esc(t.error)}</div>`:''}</article>`).join('')}
-$('provider').addEventListener('change',changeProvider);$('generate').addEventListener('click',generate);load().then(refresh);setInterval(refresh,3000);
+$('provider').addEventListener('change',changeProvider);
+$('image').addEventListener('change',refreshModels);
+$('image').addEventListener('input',refreshModels);
+$('generate').addEventListener('click',generate);
+$('saveKey').addEventListener('click',saveApiKey);
+$('startLogin').addEventListener('click',startLogin);
+$('cancelLogin').addEventListener('click',cancelLogin);
+$('oobCode').addEventListener('change',completeLogin);
+$('logout').addEventListener('click',logout);
+authState().then(loadProviders).then(refresh);setInterval(refresh,3000);
 </script></body></html>
