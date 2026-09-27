@@ -1,8 +1,17 @@
-"""Provider/model metadata shared by the CLI and web UI."""
+"""Provider/model metadata shared by the CLI and web UI.
+
+Most providers publish a small fixed set of short model names, so their options
+are a static map. OrcaRouter's catalog is live and per-workspace, so its options
+are resolved from the catalog at request time (see
+:mod:`video_gen.orcarouter.catalog`); the entry below is the verified cold-start
+fallback used only when discovery fails.
+"""
 
 from __future__ import annotations
 
 from typing import TypedDict
+
+from .orcarouter.catalog import SEED_MODELS, select
 
 
 class ProviderInfo(TypedDict):
@@ -37,7 +46,30 @@ PROVIDER_INFO: dict[str, ProviderInfo] = {
         },
         "supports_image": True,
     },
+    "orcarouter": {
+        "label": "OrcaRouter",
+        # Verified cold-start fallback only. The live catalog replaces this
+        # whenever discovery succeeds; it is never merged into a live result.
+        "models": {m.id: m.id for m in SEED_MODELS if "openai-video" in m.endpoint_types},
+        "supports_image": True,
+    },
 }
+
+#: Providers whose model list comes from live discovery rather than this map.
+DISCOVERED_PROVIDERS = frozenset({"orcarouter"})
 
 ASPECT_RATIOS = ["16:9", "9:16", "1:1"]
 RESOLUTIONS = ["720p", "1080p"]
+
+
+def static_model_options(provider: str, requires_image: bool = False) -> list[str]:
+    """Fallback option list for a discovered provider, filtered by capability.
+
+    Mirrors the live filter exactly, including the fail-closed rule for image
+    input, so a degraded catalog never offers a model the live one would hide.
+    """
+    if provider not in DISCOVERED_PROVIDERS:
+        return list(PROVIDER_INFO[provider]["models"])
+
+    modalities = ("image",) if requires_image else ()
+    return [m.id for m in select(SEED_MODELS, "video", modalities)]

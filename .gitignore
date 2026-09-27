@@ -9,3 +9,5 @@ build/
 .pytest_cache/
 .ruff_cache/
 output/
+# Generated review evidence: tests/test_orcarouter_gui.py writes it on every run.
+orca-evidence/

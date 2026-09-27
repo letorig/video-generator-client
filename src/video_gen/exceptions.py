@@ -12,6 +12,14 @@ class ProviderNotSupported(VideoGenError):
     """The requested provider is not registered."""
 
 
+class ProviderReauthRequired(VideoGenError):
+    """The stored credential was rejected upstream and must be replaced.
+
+    Terminal, not retryable: a durable OrcaRouter key has no refresh grant, so
+    the only recovery is a new sign-in or a new API key.
+    """
+
+
 class APIError(VideoGenError):
     """A provider returned an HTTP/API error."""
 

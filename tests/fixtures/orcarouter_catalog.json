@@ -1,0 +1,87 @@
+{
+  "_comment": [
+    "Deterministic /v1/models payload used by tests/test_orcarouter_gui.py.",
+    "It is in the real wire shape on purpose: the test feeds it to",
+    "video_gen.orcarouter.catalog.parse_models, so the browser exercises the",
+    "same parser the live path uses rather than a hand-built object graph.",
+    "Every id, endpoint type and modality below was read from a live catalog",
+    "fetch on 2026-09-15. The rows that must NEVER appear in a video dropdown",
+    "(text-only chat, image-generation) are present precisely so their absence",
+    "from the rendered selector is an observable assertion."
+  ],
+  "object": "list",
+  "data": [
+    {
+      "id": "kling/kling-v3",
+      "object": "model",
+      "owned_by": "kling",
+      "supported_endpoint_types": ["openai-video"],
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["video"]
+      }
+    },
+    {
+      "id": "kling/kling-v2-6",
+      "object": "model",
+      "owned_by": "kling",
+      "supported_endpoint_types": ["openai-video"],
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["video"]
+      }
+    },
+    {
+      "id": "kling/kling-v2-5-turbo",
+      "object": "model",
+      "owned_by": "kling",
+      "supported_endpoint_types": ["openai-video"],
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["video"]
+      }
+    },
+    {
+      "id": "minimax/minimax-h3",
+      "object": "model",
+      "owned_by": "minimax",
+      "context_length": 1000000,
+      "supported_endpoint_types": ["openai-video"],
+      "architecture": {
+        "input_modalities": ["text", "image", "video", "audio"],
+        "output_modalities": ["video"]
+      }
+    },
+    {
+      "id": "kling/kling-video-o1",
+      "object": "model",
+      "owned_by": "kling",
+      "supported_endpoint_types": ["openai-video"],
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["video"]
+      }
+    },
+    {
+      "id": "deepseek/deepseek-v4-pro",
+      "object": "model",
+      "owned_by": "deepseek",
+      "context_length": 1048576,
+      "supported_endpoint_types": ["openai", "openai-response"],
+      "architecture": {
+        "input_modalities": ["text"],
+        "output_modalities": ["text"]
+      }
+    },
+    {
+      "id": "openai/gpt-image-1",
+      "object": "model",
+      "owned_by": "openai",
+      "supported_endpoint_types": ["image-generation"],
+      "architecture": {
+        "input_modalities": ["text", "image"],
+        "output_modalities": ["image"]
+      }
+    }
+  ]
+}
