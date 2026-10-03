@@ -1,5 +1,5 @@
 # Video Gen Client
-
+ 
 One async Python client for multiple video-generation providers: **Seedance, Kling, MiniMax/Hailuo and Wan**.
 
 
